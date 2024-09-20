@@ -3,10 +3,11 @@ let result = document.getElementById('result');
 let model;
 let lastPrediction = ''; // Almacena la última predicción para el botón de voz
 
-// Cargar el modelo coco-ssd
+// Cargar tu modelo entrenado desde Google Drive
 async function loadModel() {
     result.innerText = 'Cargando modelo...';
-    model = await cocoSsd.load();
+    // Aquí cargamos tu modelo personalizado desde Google Drive
+    model = await tf.loadGraphModel('https://drive.google.com/uc?export=download&id=1-9H2uJCetMX7QSu43-iIkJ3rGn_O0B29');
     result.innerText = 'Modelo cargado.';
     startDetection(); // Comenzar detección en tiempo real
 }
@@ -43,13 +44,20 @@ async function startDetection() {
 
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Realizar predicción
-        const predictions = await model.detect(canvas);
+        // Preprocesar el fotograma de video para el modelo
+        const imageTensor = tf.browser.fromPixels(canvas).expandDims(0); // Crea un tensor a partir del canvas
 
-        if (predictions.length > 0) {
-            // Toma la primera predicción
-            lastPrediction = predictions[0].class;
-            result.innerText = `${predictions[0].class}: ${Math.round(predictions[0].score * 100)}%`;
+        // Realizar predicción
+        const predictions = await model.executeAsync(imageTensor);
+
+        // Asumiendo que el modelo devuelve las clases y scores
+        const classes = predictions[0].arraySync();
+        const scores = predictions[1].arraySync();
+
+        // Si hay predicciones, mostrar la de mayor score
+        if (scores.length > 0 && scores[0] > 0.5) {
+            lastPrediction = classes[0]; // Obtén la clase predicha
+            result.innerText = `${classes[0]}: ${Math.round(scores[0] * 100)}%`;
         } else {
             result.innerText = 'No se detectaron objetos';
             lastPrediction = ''; // Limpiar la predicción si no hay nada detectado
