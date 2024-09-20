@@ -1,15 +1,98 @@
 let video = document.getElementById('video');
 let result = document.getElementById('result');
 let model;
-let lastPrediction = ''; // Almacena la última predicción para el botón de voz
+let lastPrediction = null;
 
-// Cargar tu modelo entrenado desde Google Drive
+// Diccionario de traducción de clases de objetos
+const translation = {
+    'person': 'persona',
+    'bicycle': 'bicicleta',
+    'car': 'coche',
+    'motorcycle': 'moto',
+    'airplane': 'avión',
+    'bus': 'autobús',
+    'train': 'tren',
+    'truck': 'camión',
+    'boat': 'barco',
+    'traffic light': 'semáforo',
+    'fire hydrant': 'hidrante',
+    'stop sign': 'señal de stop',
+    'parking meter': 'parquímetro',
+    'bench': 'banco',
+    'bird': 'pájaro',
+    'cat': 'gato',
+    'dog': 'perro',
+    'horse': 'caballo',
+    'sheep': 'oveja',
+    'cow': 'vaca',
+    'elephant': 'elefante',
+    'bear': 'oso',
+    'zebra': 'cebra',
+    'giraffe': 'jirafa',
+    'backpack': 'mochila',
+    'umbrella': 'paraguas',
+    'handbag': 'bolso',
+    'tie': 'corbata',
+    'suitcase': 'maleta',
+    'frisbee': 'disco volador',
+    'skis': 'esquís',
+    'snowboard': 'tabla de snowboard',
+    'sports ball': 'pelota',
+    'kite': 'cometa',
+    'baseball bat': 'bate de béisbol',
+    'baseball glove': 'guante de béisbol',
+    'skateboard': 'monopatín',
+    'surfboard': 'tabla de surf',
+    'tennis racket': 'raqueta de tenis',
+    'bottle': 'botella',
+    'wine glass': 'copa de vino',
+    'cup': 'taza',
+    'fork': 'tenedor',
+    'knife': 'cuchillo',
+    'spoon': 'cuchara',
+    'bowl': 'cuenco',
+    'banana': 'plátano',
+    'apple': 'manzana',
+    'sandwich': 'sándwich',
+    'orange': 'naranja',
+    'broccoli': 'brócoli',
+    'carrot': 'zanahoria',
+    'hot dog': 'perrito caliente',
+    'pizza': 'pizza',
+    'donut': 'donut',
+    'cake': 'pastel',
+    'chair': 'silla',
+    'couch': 'sofá',
+    'potted plant': 'planta en maceta',
+    'bed': 'cama',
+    'dining table': 'mesa de comedor',
+    'toilet': 'inodoro',
+    'tv': 'televisor',
+    'laptop': 'portátil',
+    'mouse': 'ratón',
+    'remote': 'mando',
+    'keyboard': 'teclado',
+    'cell phone': 'celular',
+    'microwave': 'microondas',
+    'oven': 'horno',
+    'toaster': 'tostadora',
+    'sink': 'fregadero',
+    'refrigerator': 'nevera',
+    'book': 'libro',
+    'clock': 'reloj',
+    'vase': 'jarrón',
+    'scissors': 'tijeras',
+    'teddy bear': 'oso de peluche',
+    'hair drier': 'secador de pelo',
+    'toothbrush': 'cepillo de dientes'
+};
+
+// Cargar el modelo coco-ssd
 async function loadModel() {
     result.innerText = 'Cargando modelo...';
-    // Aquí cargamos tu modelo personalizado desde Google Drive
-    model = await tf.loadGraphModel('https://drive.google.com/uc?export=download&id=1-9H2uJCetMX7QSu43-iIkJ3rGn_O0B29');
+    model = await cocoSsd.load();
     result.innerText = 'Modelo cargado.';
-    startDetection(); // Comenzar detección en tiempo real
+    startDetection();
 }
 
 // Obtener acceso a la cámara trasera
@@ -38,47 +121,43 @@ async function startDetection() {
     const context = canvas.getContext('2d');
 
     const detectFrame = async () => {
-        // Configura el tamaño del canvas basado en el video
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
 
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Preprocesar el fotograma de video para el modelo
-        const imageTensor = tf.browser.fromPixels(canvas).expandDims(0); // Crea un tensor a partir del canvas
+        const predictions = await model.detect(canvas);
 
-        // Realizar predicción
-        const predictions = await model.executeAsync(imageTensor);
-
-        // Asumiendo que el modelo devuelve las clases y scores
-        const classes = predictions[0].arraySync();
-        const scores = predictions[1].arraySync();
-
-        // Si hay predicciones, mostrar la de mayor score
-        if (scores.length > 0 && scores[0] > 0.5) {
-            lastPrediction = classes[0]; // Obtén la clase predicha
-            result.innerText = `${classes[0]}: ${Math.round(scores[0] * 100)}%`;
+        if (predictions.length > 0) {
+            lastPrediction = predictions[0].class; // Guardar la predicción para el audio
+            const translatedPredictions = predictions.map(p => {
+                const classInSpanish = translation[p.class] || p.class;
+                return `${classInSpanish}: ${Math.round(p.score * 100)}%`;
+            });
+            result.innerHTML = translatedPredictions.join('<br>');
         } else {
+            lastPrediction = null;
             result.innerText = 'No se detectaron objetos';
-            lastPrediction = ''; // Limpiar la predicción si no hay nada detectado
         }
 
-        // Continuar detectando
         requestAnimationFrame(detectFrame);
     };
 
-    detectFrame(); // Llamar a la función para comenzar la detección
+    detectFrame();
 }
 
 // Función para decir el objeto detectado en voz alta
 function speakPrediction() {
     if (lastPrediction) {
-        const speech = new SpeechSynthesisUtterance(`Veo un ${lastPrediction}`);
+        const predictionInSpanish = translation[lastPrediction] || lastPrediction;
+        const speech = new SpeechSynthesisUtterance(`Veo un ${predictionInSpanish}`);
         speech.lang = 'es-ES';
+        speech.rate = 0.9; // Ajusta la velocidad de la voz
         window.speechSynthesis.speak(speech);
     } else {
         const speech = new SpeechSynthesisUtterance('No se ha detectado ningún objeto');
         speech.lang = 'es-ES';
+        speech.rate = 0.9;
         window.speechSynthesis.speak(speech);
     }
 }
@@ -89,5 +168,4 @@ window.onload = async () => {
     await loadModel();
 };
 
-// Añadir el evento al botón para decir el objeto en voz alta
 document.getElementById('speak-button').addEventListener('click', speakPrediction);
