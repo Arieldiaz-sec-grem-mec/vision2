@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detección en Tiempo Real</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Importar TensorFlow.js y COCO-SSD -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
 </head>
-
 <body>
     <h1>Detección de Objetos</h1>
     <div id="video-container">
@@ -18,7 +18,8 @@
         <div id="result">Esperando...</div>
     </div>
     <button id="speak-button">Decir el Objeto Detectado</button>
+
+    <!-- Importar el archivo JS para la lógica de detección -->
     <script src="script.js"></script>
 </body>
-
 </html>
