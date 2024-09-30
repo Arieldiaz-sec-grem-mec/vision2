@@ -1,86 +1,71 @@
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f0f0f0;
+body{
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
+    background-color:#022816;
+    color: white;
+    font-family: Arial, sans-serif;
     text-align: center;
+    position: relative;
 }
 
-h1 {
-    font-size: 2em;
-    color: #333;
-    margin: 20px;
+.container {
+    width: 100%;
 }
 
 #video-container {
     position: relative;
     width: 100%;
-    max-width: 900px; /* Limitar el tamaño máximo */
-    margin: 0 auto;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Sombra más suave */
-    border-radius: 15px;
-    overflow: hidden; /* Para asegurarse de que los bordes sean redondeados */
+    overflow: hidden;
+    border-radius: 35px;
 }
 
-#video {
-    width: 100%; /* Ocupa el ancho completo */
+video, img {
+    width: 100%;
     height: auto;
-    transform: scale(0.65); /* Reduce el tamaño del video al 65% */
-    transform-origin: center; /* Mantiene el centrado al reducir el tamaño */
+}
+
+#speak-button {
+    background-color: rgba(76, 175, 80, 0.8);
+    color: white;
+    border: none;
+    padding: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#speak-button i {
+    font-size: 36px;
 }
 
 #result-container {
-    margin: 20px 0;
     display: flex;
     justify-content: center;
-    align-items: center;
-}
-
-#result {
-    font-size: 1.5em;
-    font-weight: bold;
-    color: #004d40; /* Un verde oscuro profesional */
-    background-color: #e0f7fa; /* Fondo suave */
-    padding: 15px 25px;
+    margin-top: 20px;
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px;
     border-radius: 10px;
-    border: 2px solid #004d40;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.4);
 }
 
-button {
-    font-size: 1.2em;
-    background-color: #00796b; /* Un verde profesional */
-    color: white;
-    padding: 10px 20px;
-    border: none;
+.result {
+    margin: 0 10px;
+    padding: 10px 15px;
+    background-color: rgba(255, 255, 255, 0.3);
     border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #004d40;
-}
-
-@media (max-width: 768px) {
-    #video {
-        transform: scale(0.8); /* Reducir menos en pantallas más pequeñas */
-    }
-
-    h1 {
-        font-size: 1.8em;
-    }
-
-    #result {
-        font-size: 1.3em;
-    }
-
-    button {
-        font-size: 1em;
-    }
+    font-size: 22px;
+    color: white;
 }
