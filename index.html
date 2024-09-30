@@ -8,13 +8,15 @@
     <!-- Importar TensorFlow.js y COCO-SSD -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <!-- Añadir FontAwesome para el icono de micrófono -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
     <h1>👀</h1>
     <div id="video-container">
         <video id="video" autoplay playsinline></video>
     </div>
-    <button id="speak-button">Que hay por delante?</button>
+    <button id="speak-button"><i class="fas fa-microphone"></i></button>
     <div id="result-container">
         <div id="result">Esperando...</div>
     </div>
