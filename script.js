@@ -87,6 +87,7 @@ const translation = {
     'toothbrush': 'cepillo de dientes'
 };
 
+
 // Cargar el modelo COCO-SSD
 async function loadModel() {
     result.innerText = 'Cargando modelo...';
@@ -100,7 +101,7 @@ async function enableCamera() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: {
-                facingMode: 'environment' // Cámara trasera
+                facingMode: 'environment'
             }
         });
         video.srcObject = stream;
@@ -129,7 +130,7 @@ async function startDetection() {
         const predictions = await model.detect(canvas);
 
         if (predictions.length > 0) {
-            lastPrediction = predictions[0].class; // Guardar la predicción para el audio
+            lastPrediction = predictions[0].class;
             const translatedPredictions = predictions.map(p => {
                 const classInSpanish = translation[p.class] || p.class;
                 return `${classInSpanish}: ${Math.round(p.score * 100)}%`;
@@ -146,18 +147,84 @@ async function startDetection() {
     detectFrame();
 }
 
-// Función para decir el objeto detectado en voz alta
+// Reconocimiento de voz
+window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+recognition.lang = 'es-ES';
+
+recognition.onresult = function(event) {
+    const transcript = event.results[0][0].transcript.toLowerCase();
+    
+    if (transcript.includes("qué se ve adelante")) {
+        speakPrediction();
+    } else if (transcript.includes("qué hora es")) {
+        speakTime();
+    } else if (transcript.includes("qué día es")) {
+        speakDate();
+    } else if (transcript.includes("dónde estoy")) {
+        speakLocation();
+    }
+};
+
+function startListening() {
+    recognition.start();
+}
+
+// Función para decir el objeto detectado
 function speakPrediction() {
     if (lastPrediction) {
         const predictionInSpanish = translation[lastPrediction] || lastPrediction;
         const speech = new SpeechSynthesisUtterance(`Veo un ${predictionInSpanish}`);
         speech.lang = 'es-ES';
-        speech.rate = 0.9; // Ajusta la velocidad de la voz
+        speech.rate = 0.7;
         window.speechSynthesis.speak(speech);
     } else {
         const speech = new SpeechSynthesisUtterance('No se ha detectado ningún objeto');
         speech.lang = 'es-ES';
-        speech.rate = 0.9;
+        speech.rate = 0.7;
+        window.speechSynthesis.speak(speech);
+    }
+}
+
+// Función para decir la hora actual
+function speakTime() {
+    const now = new Date();
+    const speech = new SpeechSynthesisUtterance(`Son las ${now.getHours()} y ${now.getMinutes()}`);
+    speech.lang = 'es-ES';
+    speech.rate = 0.7;
+    window.speechSynthesis.speak(speech);
+}
+
+// Función para decir la fecha actual
+function speakDate() {
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateString = now.toLocaleDateString('es-ES', options);
+    const speech = new SpeechSynthesisUtterance(`Hoy es ${dateString}`);
+    speech.lang = 'es-ES';
+    speech.rate = 0.7;
+    window.speechSynthesis.speak(speech);
+}
+
+// Función para obtener la ubicación del usuario
+function speakLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            const { latitude, longitude } = position.coords;
+            const speech = new SpeechSynthesisUtterance(`Tu ubicación actual es latitud ${latitude} y longitud ${longitude}`);
+            speech.lang = 'es-ES';
+            speech.rate = 0.7;
+            window.speechSynthesis.speak(speech);
+        }, error => {
+            const speech = new SpeechSynthesisUtterance('No se pudo obtener la ubicación');
+            speech.lang = 'es-ES';
+            speech.rate = 0.7;
+            window.speechSynthesis.speak(speech);
+        });
+    } else {
+        const speech = new SpeechSynthesisUtterance('La geolocalización no está disponible en este dispositivo');
+        speech.lang = 'es-ES';
+        speech.rate = 0.7;
         window.speechSynthesis.speak(speech);
     }
 }
@@ -168,4 +235,5 @@ window.onload = async () => {
     await loadModel();
 };
 
-document.getElementById('speak-button').addEventListener('click', speakPrediction);
+// Asignar evento de click al botón para activar el reconocimiento de voz
+document.getElementById('speak-button').addEventListener('click', startListening);
