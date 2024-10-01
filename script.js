@@ -87,7 +87,6 @@ const translation = {
     'toothbrush': 'cepillo de dientes'
 };
 
-
 // Cargar el modelo COCO-SSD
 async function loadModel() {
     result.innerText = 'Cargando modelo...';
@@ -148,26 +147,41 @@ async function startDetection() {
 }
 
 // Reconocimiento de voz
-window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = new SpeechRecognition();
-recognition.lang = 'es-ES';
+if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+    alert('El reconocimiento de voz no es compatible con este navegador');
+} else {
+    window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-ES';
+    recognition.continuous = true;
 
-recognition.onresult = function(event) {
-    const transcript = event.results[0][0].transcript.toLowerCase();
-    
-    if (transcript.includes("qué se ve adelante")) {
-        speakPrediction();
-    } else if (transcript.includes("qué hora es")) {
-        speakTime();
-    } else if (transcript.includes("qué día es")) {
-        speakDate();
-    } else if (transcript.includes("dónde estoy")) {
-        speakLocation();
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        console.log('Transcripción: ', transcript);  // Verificar el comando detectado
+
+        if (transcript.includes("qué se ve adelante")) {
+            speakPrediction();
+        } else if (transcript.includes("qué hora es")) {
+            speakTime();
+        } else if (transcript.includes("qué día es")) {
+            speakDate();
+        } else if (transcript.includes("dónde estoy")) {
+            speakLocation();
+        }
+    };
+
+    recognition.onerror = function(event) {
+        console.error('Error en el reconocimiento de voz: ', event.error);
+    };
+
+    recognition.onend = function() {
+        console.log('El reconocimiento de voz se ha detenido.');
+    };
+
+    function startListening() {
+        recognition.start();
+        console.log('Iniciando reconocimiento de voz...');
     }
-};
-
-function startListening() {
-    recognition.start();
 }
 
 // Función para decir el objeto detectado
@@ -234,6 +248,8 @@ window.onload = async () => {
     await enableCamera();
     await loadModel();
 };
-
 // Asignar evento de click al botón para activar el reconocimiento de voz
-document.getElementById('speak-button').addEventListener('click', startListening);
+document.getElementById('speak-button').addEventListener('click', () => {
+    startListening();  // Llama a la función para iniciar el reconocimiento de voz
+    console.log('Botón presionado, iniciando reconocimiento de voz');
+});
